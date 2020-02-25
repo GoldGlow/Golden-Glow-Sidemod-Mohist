@@ -1,0 +1,76 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven { 
+			name = "forge"
+			url = "http://files.minecraftforge.net/maven" 
+		}
+		maven {
+            url = "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+		classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.2'
+    }
+}
+apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'com.github.johnrengelman.plugin-shadow'
+apply plugin: 'java'
+
+version = "1.0.3"
+group = "com.goldenglow" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "GoldenGlow"
+
+sourceCompatibility = targetCompatibility = "1.8"
+compileJava
+        {
+            sourceCompatibility = targetCompatibility = "1.8"
+        }
+
+tasks.withType(JavaCompile)
+        {
+            task ->
+                task.options.encoding = 'UTF-8'
+                task.options.fork = true
+        }
+
+minecraft
+        {
+            version = project.forgeVersion
+			runDir = "run"
+			mappings = project.mcpVersion
+        }
+
+dependencies
+        {
+			compile 'com.mojang:brigadier:1.0.17'
+            compileOnly fileTree(dir: 'libs', include: ['*.jar'])
+			shadow 'io.javalin:javalin:3.6.0'
+        }
+
+shadowJar {
+    configurations = [project.configurations.shadow]
+    relocate 'io.javalin', 'com.goldenglow.javalin'
+    classifier ''
+}
+
+reobf {
+    shadowJar{}
+}
+
+processResources {
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version': project.version,
+                'mcversion': project.minecraft.version,
+                'modid': archivesBaseName
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
