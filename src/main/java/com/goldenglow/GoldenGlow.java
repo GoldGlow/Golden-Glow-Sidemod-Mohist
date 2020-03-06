@@ -38,9 +38,12 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import noppes.npcs.CustomNpcs;
 import noppes.npcs.api.wrapper.WrapperNpcAPI;
+import org.bukkit.Bukkit;
+import org.bukkit.Server;
+import org.bukkit.plugin.java.JavaPlugin;
 
 @Mod(modid="obscureobsidian", name="Obscure Obsidian", dependencies = "required-after:pixelmon;required-after:customnpcs;required-after:worldedit;required-after:armourers_workshop;required-after:cfm", acceptableRemoteVersions = "*")
-public class GoldenGlow {
+public class GoldenGlow{
 
     public String VERSION = "1.0.2";
 
@@ -82,6 +85,11 @@ public class GoldenGlow {
         statsServer.start();
     }
 
+    @Override
+    public void onEnable(){
+        Bukkit.getServer().getPluginManager().registerEvents(new SpigotEvents(), this);
+    }
+
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         logger.info("Initializing GoldenGlow sidemod v"+VERSION+"...");
@@ -114,6 +122,7 @@ public class GoldenGlow {
         Pixelmon.EVENT_BUS.register(raidEventHandler);
         Pixelmon.EVENT_BUS.register(soundEventHandler);
         Pixelmon.EVENT_BUS.register(HuntHandler.class);
+        Bukkit.getServer().getPluginManager().registerEvents(new SpigotEvents(), null);
         WrapperNpcAPI.EVENT_BUS.register(TickHandler.class);
     }
 

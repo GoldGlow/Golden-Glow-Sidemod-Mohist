@@ -51,40 +51,5 @@ public class LoginLogoutEventHandler {
             }
         }
         GoldenGlow.gymManager.removeFromQueues((EntityPlayerMP) event.player);
-
-        try {
-            if (playerData != null) {
-                User user = LuckPermsProvider.get().getUserManager().getUser(event.player.getUniqueID());
-                File f = new File(Reference.statsDir, event.player.getUniqueID().toString() + ".json");
-                if (!f.exists()) f.createNewFile();
-                JsonWriter writer = new JsonWriter(new FileWriter(f));
-                writer.setIndent("\t");
-
-                writer.beginObject();
-
-                int badgeCount = 0;
-                for (Node n : user.getNodes()) {
-                    if (n.getKey().startsWith("badge.") && n.getKey().endsWith("npc"))
-                        badgeCount++;
-                }
-
-                if(playerData.getLoginTime()!=null) {
-                    long sessionTime = Math.abs(Duration.between(Instant.now(), playerData.getLoginTime()).getSeconds());
-                    long totalTime = event.player.getEntityData().getLong("playtime") + sessionTime;
-                    event.player.getEntityData().setLong("playtime", totalTime);
-
-                    writer.name("badges").value(Integer.toString(badgeCount));
-                    writer.name("dex").value(Integer.toString(Pixelmon.storageManager.getParty(event.player.getUniqueID()).pokedex.countCaught()));
-                    writer.name("time").value(String.format("%sh:%sm", totalTime / 3600, (totalTime % 3600) / 60));
-
-                    writer.endObject();
-                    writer.close();
-                }
-            }
-        }
-        catch (IOException e) {
-            GoldenGlow.logger.error("Error occurred saving player stats.");
-            e.printStackTrace();
-        }
     }
 }
