@@ -1,0 +1,6 @@
+name: GoldenGlow
+author: [RyanV97, JeanMarc]
+description: The plugin with Obscure Obsidian's server code!
+main: com.goldenglowspigot.GoldenGlow
+version: 1.0
+api-version: 1.12.2
