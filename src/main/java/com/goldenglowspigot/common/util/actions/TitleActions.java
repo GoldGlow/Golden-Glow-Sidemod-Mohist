@@ -1,13 +1,11 @@
 package com.goldenglowspigot.common.util.actions;
 
-import com.goldenglow.common.inventory.BagInventories;
 import com.goldenglow.GoldenGlow;
-import com.goldenglowspigot.common.util.PermissionUtils;
-import com.goldenglow.common.util.actions.Action;
+import com.pixelmonessentials.common.api.action.Action;
 import net.minecraft.entity.player.EntityPlayerMP;
 
 public class TitleActions implements Action {
-    public final String name="TM_PARTY";
+    public final String name="CHANGE_TITLE";
 
     public String getName(){
         return this.name;

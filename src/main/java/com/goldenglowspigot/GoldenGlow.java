@@ -4,6 +4,7 @@ import com.goldenglowspigot.common.handlers.events.*;
 import com.goldenglowspigot.common.util.PermissionUtils;
 import com.goldenglowspigot.common.util.actions.TitleActions;
 import com.goldenglowspigot.common.util.requirements.PermissionRequirement;
+import com.pixelmonessentials.PixelmonEssentials;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -20,7 +21,7 @@ public class GoldenGlow extends JavaPlugin{
     public void onEnable(){
         Bukkit.getServer().getPluginManager().registerEvents(new SpigotEvents(), this);
         com.goldenglow.GoldenGlow.permissionUtils=new PermissionUtils();
-        com.goldenglow.GoldenGlow.actionHandler.actionTypes.add(new TitleActions());
-        com.goldenglow.GoldenGlow.requirementHandler.addRequirement(new PermissionRequirement());
+        PixelmonEssentials.actionHandler.addAction(new TitleActions());
+        PixelmonEssentials.requirementHandler.addRequirement(new PermissionRequirement());
     }
 }
