@@ -68,6 +68,28 @@ public class PermissionUtils implements com.goldenglow.common.util.PermissionUti
         return false;
     }
 
+    public boolean checkPermissionWithStart(EntityPlayerMP player, String permissionStart){
+        User user= this.api.getUserManager().getUser(player.getUniqueID());
+        Collection<Node> nodes=user.getNodes();
+        for(Node node: nodes){
+            if(node.getKey().startsWith(permissionStart)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public String getNodeWithStart(EntityPlayerMP player, String permissionStart){
+        User user= this.api.getUserManager().getUser(player.getUniqueID());
+        Collection<Node> nodes=user.getNodes();
+        for(Node node: nodes){
+            if(node.getKey().startsWith(permissionStart)){
+                return node.getKey();
+            }
+        }
+        return "";
+    }
+
     public String getPrefix(EntityPlayerMP player){
         User user= this.api.getUserManager().getUser(player.getUniqueID());
         Collection<Node> nodes=user.getNodes();

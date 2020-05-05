@@ -1,8 +1,11 @@
 package com.goldenglowspigot.common.handlers.events;
 
+import com.coloredcarrot.jsonapi.impl.JsonClickEvent;
+import com.coloredcarrot.jsonapi.impl.JsonHoverEvent;
+import com.coloredcarrot.jsonapi.impl.JsonMsg;
+import com.goldenglow.GoldenGlow;
 import com.goldenglow.common.data.player.IPlayerData;
 import com.goldenglow.common.data.player.OOPlayerProvider;
-import com.goldenglowspigot.GoldenGlow;
 import com.goldenglowspigot.common.util.GGLogger;
 import com.goldenglowspigot.common.util.Reference;
 import com.google.gson.stream.JsonWriter;
@@ -11,9 +14,14 @@ import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
 import net.minecraft.entity.player.EntityPlayerMP;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import red.mohist.api.ChatComponentAPI;
 import red.mohist.api.PlayerAPI;
 
 import java.io.File;
@@ -60,6 +68,31 @@ public class SpigotEvents implements Listener {
         catch (IOException e) {
             GGLogger.error("Error occurred saving player stats.");
             e.printStackTrace();
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event){
+        if(event.getSlotType()== InventoryType.SlotType.ARMOR){
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onChat(AsyncPlayerChatEvent event){
+        String name=event.getPlayer().getDisplayName();
+        EntityPlayerMP playerMP=PlayerAPI.getNMSPlayer(event.getPlayer());
+        if(GoldenGlow.permissionUtils.checkPermissionWithStart(playerMP, "hover.")){
+            event.setCancelled(true);
+            String hoverText=GoldenGlow.permissionUtils.getNodeWithStart(playerMP, "hover.").replace("hover.","");
+            JsonMsg message=new JsonMsg(name);
+            message=message.hoverEvent(JsonHoverEvent.showText(hoverText));
+            if(GoldenGlow.permissionUtils.checkPermissionWithStart(playerMP, "link.")){
+                String linkUrl=GoldenGlow.permissionUtils.getNodeWithStart(playerMP, "link.").replace("link.","");
+                message=message.clickEvent(JsonClickEvent.openUrl(linkUrl));
+            }
+            message.append(": "+event.getMessage());
+            message.send(event.getRecipients());
         }
     }
 }
