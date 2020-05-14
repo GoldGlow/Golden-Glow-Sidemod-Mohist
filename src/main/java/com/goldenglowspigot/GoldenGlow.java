@@ -1,5 +1,7 @@
 package com.goldenglowspigot;
 
+import com.goldenglowspigot.common.chatChannels.ChannelsManager;
+import com.goldenglowspigot.common.commands.CommandChannel;
 import com.goldenglowspigot.common.handlers.events.*;
 import com.goldenglowspigot.common.util.PermissionUtils;
 import com.goldenglowspigot.common.util.actions.TitleActions;
@@ -14,6 +16,8 @@ public class GoldenGlow extends JavaPlugin{
 
     public static Thread statsServer;
 
+    public static ChannelsManager channelsManager=new ChannelsManager();
+
     public GoldenGlow() {
     }
 
@@ -21,6 +25,7 @@ public class GoldenGlow extends JavaPlugin{
     public void onEnable(){
         Bukkit.getServer().getPluginManager().registerEvents(new SpigotEvents(), this);
         com.goldenglow.GoldenGlow.permissionUtils=new PermissionUtils();
+        this.getCommand("channel").setExecutor(new CommandChannel());
         PixelmonEssentials.actionHandler.addAction(new TitleActions());
         PixelmonEssentials.requirementHandler.addRequirement(new PermissionRequirement());
     }

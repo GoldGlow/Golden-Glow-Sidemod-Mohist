@@ -6,6 +6,8 @@ import com.coloredcarrot.jsonapi.impl.JsonMsg;
 import com.goldenglow.GoldenGlow;
 import com.goldenglow.common.data.player.IPlayerData;
 import com.goldenglow.common.data.player.OOPlayerProvider;
+import com.goldenglowspigot.common.chatChannels.Channel;
+import com.goldenglowspigot.common.chatChannels.PrivateChannel;
 import com.goldenglowspigot.common.util.GGLogger;
 import com.goldenglowspigot.common.util.Reference;
 import com.google.gson.stream.JsonWriter;
@@ -29,6 +31,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Set;
 
 public class SpigotEvents implements Listener {
     @EventHandler
@@ -78,21 +81,46 @@ public class SpigotEvents implements Listener {
         }
     }
 
-    @EventHandler
-    public void onChat(AsyncPlayerChatEvent event){
+    public static JsonMsg formatJsonMessage(AsyncPlayerChatEvent event){
         String name=event.getPlayer().getDisplayName();
         EntityPlayerMP playerMP=PlayerAPI.getNMSPlayer(event.getPlayer());
+        JsonMsg message=new JsonMsg(name);
         if(GoldenGlow.permissionUtils.checkPermissionWithStart(playerMP, "hover.")){
-            event.setCancelled(true);
             String hoverText=GoldenGlow.permissionUtils.getNodeWithStart(playerMP, "hover.").replace("hover.","");
-            JsonMsg message=new JsonMsg(name);
             message=message.hoverEvent(JsonHoverEvent.showText(hoverText));
-            if(GoldenGlow.permissionUtils.checkPermissionWithStart(playerMP, "link.")){
-                String linkUrl=GoldenGlow.permissionUtils.getNodeWithStart(playerMP, "link.").replace("link.","");
-                message=message.clickEvent(JsonClickEvent.openUrl(linkUrl));
+        }
+        if(GoldenGlow.permissionUtils.checkPermissionWithStart(playerMP, "link.")){
+            String linkUrl=GoldenGlow.permissionUtils.getNodeWithStart(playerMP, "link.").replace("link.","");
+            message=message.clickEvent(JsonClickEvent.openUrl(linkUrl));
+        }
+        message.append(": "+event.getMessage());
+        return message;
+    }
+
+    @EventHandler
+    public void onChat(AsyncPlayerChatEvent event){
+        event.setCancelled(true);
+        Channel channel= com.goldenglowspigot.GoldenGlow.channelsManager.getPlayerChannel(event.getPlayer());
+        if(channel instanceof PrivateChannel){
+            Player[] eligiblePlayers=((PrivateChannel) channel).getEligiblePlayers();
+            JsonMsg firstMessage=((PrivateChannel) channel).getPrefix(eligiblePlayers[1]);
+            JsonMsg secondMessage=((PrivateChannel) channel).getPrefix(eligiblePlayers[0]);
+            JsonMsg message=formatJsonMessage(event);
+            firstMessage.append(message);
+            secondMessage.append(message);
+            firstMessage.send(eligiblePlayers[0]);
+            secondMessage.send(eligiblePlayers[1]);
+        }
+        else{
+            JsonMsg prefix=channel.getPrefix();
+            JsonMsg message=formatJsonMessage(event);
+            prefix.append(message);
+            Set<Player> players=event.getRecipients();
+            for(Player player:players){
+                if(channel.canSee(player)){
+                    prefix.send(player);
+                }
             }
-            message.append(": "+event.getMessage());
-            message.send(event.getRecipients());
         }
     }
 }
