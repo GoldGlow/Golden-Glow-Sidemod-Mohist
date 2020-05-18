@@ -1,12 +1,15 @@
 package com.goldenglowspigot.common.chatChannels;
 
 import com.goldenglowspigot.GoldenGlow;
+import com.goldenglowspigot.common.util.PermissionUtils;
 import org.bukkit.entity.Player;
+import red.mohist.api.PlayerAPI;
 
 import java.util.ArrayList;
 
 public class ChannelsManager {
     private GlobalChannel globalChannel=new GlobalChannel();
+    private StaffChannel staffChannel=new StaffChannel();
     private ArrayList<Channel> channels=new ArrayList<>();
 
     public PrivateChannel checkOrAddPrivateChannel(Player[] players){
@@ -44,18 +47,27 @@ public class ChannelsManager {
                 return channel;
             }
         }
-        if(!globalChannel.getPlayers().contains(player)){
-            globalChannel.getPlayers().add(player);
+        if(this.staffChannel.getPlayers().contains(player)){
+            return this.staffChannel;
         }
-        return globalChannel;
+        if(!this.globalChannel.getPlayers().contains(player)){
+            this.globalChannel.getPlayers().add(player);
+        }
+        return this.globalChannel;
     }
 
     public void setPlayerChannel(Player player, EnumChannels channel){
+        Channel oldChannel= GoldenGlow.channelsManager.getPlayerChannel(player);
         if(channel==EnumChannels.GLOBAL){
-            Channel oldChannel= GoldenGlow.channelsManager.getPlayerChannel(player);
             if(!(oldChannel instanceof GlobalChannel)){
                 GoldenGlow.channelsManager.removeChannel(player);
-                globalChannel.getPlayers().add(player);
+                this.globalChannel.getPlayers().add(player);
+            }
+        }
+        else if(channel==EnumChannels.STAFF){
+            if(this.staffChannel.canSee(player)&&!(oldChannel instanceof StaffChannel)){
+                GoldenGlow.channelsManager.removeChannel(player);
+                this.staffChannel.getPlayers().add(player);
             }
         }
     }
@@ -69,6 +81,7 @@ public class ChannelsManager {
 
     public enum EnumChannels{
         GLOBAL,
-        PRIVATE
+        PRIVATE,
+        STAFF
     }
 }

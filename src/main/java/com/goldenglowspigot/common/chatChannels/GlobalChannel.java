@@ -26,4 +26,11 @@ public class GlobalChannel implements Channel {
         prefix.clickEvent(JsonClickEvent.runCommand("/channel global"));
         return prefix.append(" ");
     }
+
+    public static JsonMsg getPrefixStatic(){
+        JsonMsg prefix=new JsonMsg("[GLOBAL]", JsonColor.AQUA);
+        prefix.hoverEvent(JsonHoverEvent.showText("Click to change the channel to Global"));
+        prefix.clickEvent(JsonClickEvent.runCommand("/channel global"));
+        return prefix.append(" ");
+    }
 }
