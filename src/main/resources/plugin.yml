@@ -8,3 +8,9 @@ commands:
   channel:
     description: used for chat channels
     usage: /channel <list/ChannelName> <Username>
+  global:
+    description: used to switch to/talk in the global channel
+    usage: /global [Message]
+  staff:
+    description: used to switch to/talk in the staff channel
+    usage: /staff [Message]

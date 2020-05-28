@@ -1,11 +1,13 @@
 package com.goldenglowspigot.common.handlers.events;
 
 import com.coloredcarrot.jsonapi.impl.JsonClickEvent;
+import com.coloredcarrot.jsonapi.impl.JsonColor;
 import com.coloredcarrot.jsonapi.impl.JsonHoverEvent;
 import com.coloredcarrot.jsonapi.impl.JsonMsg;
 import com.goldenglow.GoldenGlow;
 import com.goldenglow.common.data.player.IPlayerData;
 import com.goldenglow.common.data.player.OOPlayerProvider;
+import com.goldenglow.common.util.scripting.VisibilityFunctions;
 import com.goldenglowspigot.common.chatChannels.Channel;
 import com.goldenglowspigot.common.chatChannels.ChannelsManager;
 import com.goldenglowspigot.common.chatChannels.GlobalChannel;
@@ -99,11 +101,17 @@ public class SpigotEvents implements Listener {
         if(isWhisper){
             Channel channel= com.goldenglowspigot.GoldenGlow.channelsManager.getPlayerChannel(event.getPlayer());
             Player otherPlayer= Bukkit.getPlayer(Bukkit.getPlayerUniqueId(message[1]));
-            if(otherPlayer!=null&&otherPlayer instanceof Player){
+            if(!VisibilityFunctions.canPlayerDmOtherPlayer(PlayerAPI.getNMSPlayer(event.getPlayer()), PlayerAPI.getNMSPlayer(otherPlayer))){
+                event.setCancelled(true);
+                JsonMsg newMessage=new JsonMsg("You can't send the message because one of you two disabled it!", JsonColor.RED);
+                newMessage.send(event.getPlayer());
+                return;
+            }
+            else if(otherPlayer!=null&&otherPlayer instanceof Player){
                 event.setCancelled(true);
                 Player[] eligiblePlayers=new Player[]{event.getPlayer(), otherPlayer};
                 com.goldenglowspigot.GoldenGlow.channelsManager.checkOrAddPrivateChannel(eligiblePlayers);
-                com.goldenglowspigot.GoldenGlow.channelsManager.setPlayerChannel(event.getPlayer(), otherPlayer);
+                com.goldenglowspigot.GoldenGlow.channelsManager.setTempChannel(event.getPlayer(), otherPlayer);
                 JsonMsg firstMessage=((PrivateChannel)com.goldenglowspigot.GoldenGlow.channelsManager.getPlayerChannel(event.getPlayer())).getPrefix(eligiblePlayers[1]);
                 JsonMsg secondMessage=((PrivateChannel)com.goldenglowspigot.GoldenGlow.channelsManager.getPlayerChannel(event.getPlayer())).getPrefix(eligiblePlayers[0]);
                 if(event.getPlayer().getDisplayName().equals(eligiblePlayers[0].getDisplayName())){
@@ -127,9 +135,7 @@ public class SpigotEvents implements Listener {
                 secondMessage.append(toSend);
                 firstMessage.send(eligiblePlayers[0]);
                 secondMessage.send(eligiblePlayers[1]);
-                if(channel instanceof GlobalChannel){
-                    com.goldenglowspigot.GoldenGlow.channelsManager.setPlayerChannel(event.getPlayer(), ChannelsManager.EnumChannels.GLOBAL);
-                }
+                com.goldenglowspigot.GoldenGlow.channelsManager.setTempChannel(event.getPlayer(), channel);
             }
         }
     }
@@ -140,6 +146,12 @@ public class SpigotEvents implements Listener {
         Channel channel= com.goldenglowspigot.GoldenGlow.channelsManager.getPlayerChannel(event.getPlayer());
         if(channel instanceof PrivateChannel){
             Player[] eligiblePlayers=((PrivateChannel) channel).getEligiblePlayers();
+            if(!VisibilityFunctions.canPlayerDmOtherPlayer(PlayerAPI.getNMSPlayer(eligiblePlayers[0]), PlayerAPI.getNMSPlayer(eligiblePlayers[1]))){
+                event.setCancelled(true);
+                JsonMsg newMessage=new JsonMsg("You can't send the message because one of you two disabled it!", JsonColor.RED);
+                newMessage.send(event.getPlayer());
+                return;
+            }
             JsonMsg firstMessage=((PrivateChannel) channel).getPrefix(eligiblePlayers[1]);
             JsonMsg secondMessage=((PrivateChannel) channel).getPrefix(eligiblePlayers[0]);
             if(event.getPlayer().getDisplayName().equals(eligiblePlayers[0].getDisplayName())){

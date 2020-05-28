@@ -1,5 +1,6 @@
 package com.goldenglowspigot.common.chatChannels;
 
+import com.coloredcarrot.jsonapi.impl.JsonMsg;
 import com.goldenglowspigot.GoldenGlow;
 import com.goldenglowspigot.common.util.PermissionUtils;
 import org.bukkit.entity.Player;
@@ -56,7 +57,7 @@ public class ChannelsManager {
         return this.globalChannel;
     }
 
-    public void setPlayerChannel(Player player, EnumChannels channel){
+    public void setTempChannel(Player player, EnumChannels channel){
         Channel oldChannel= GoldenGlow.channelsManager.getPlayerChannel(player);
         if(channel==EnumChannels.GLOBAL){
             if(!(oldChannel instanceof GlobalChannel)){
@@ -72,11 +73,66 @@ public class ChannelsManager {
         }
     }
 
+    public void setTempChannel(Player changingPlayer, Player otherPlayer){
+        Player[] players={changingPlayer, otherPlayer};
+        PrivateChannel channel=GoldenGlow.channelsManager.checkOrAddPrivateChannel(players);
+        if(!this.getPlayerChannel(changingPlayer).equals(channel)){
+            GoldenGlow.channelsManager.removeChannel(changingPlayer);
+            channel.getPlayers().add(changingPlayer);
+        }
+    }
+
+    public void setTempChannel(Player player, Channel channel){
+        GoldenGlow.channelsManager.removeChannel(player);
+        channel.getPlayers().add(player);
+    }
+
+    public void setPlayerChannel(Player player, EnumChannels channel){
+        Channel oldChannel= GoldenGlow.channelsManager.getPlayerChannel(player);
+        boolean changed=false;
+        JsonMsg message=new JsonMsg("Changed the channel to ");
+        if(channel==EnumChannels.GLOBAL){
+            if(!(oldChannel instanceof GlobalChannel)){
+                changed=true;
+                message.append(globalChannel.getPrefix());
+                GoldenGlow.channelsManager.removeChannel(player);
+                this.globalChannel.getPlayers().add(player);
+            }
+        }
+        else if(channel==EnumChannels.STAFF){
+            if(this.staffChannel.canSee(player)&&!(oldChannel instanceof StaffChannel)){
+                changed=true;
+                message.append(staffChannel.getPrefix());
+                GoldenGlow.channelsManager.removeChannel(player);
+                this.staffChannel.getPlayers().add(player);
+            }
+        }
+        if(changed){
+            message.send(player);
+        }
+    }
+
     public void setPlayerChannel(Player changingPlayer, Player otherPlayer){
         Player[] players={changingPlayer, otherPlayer};
         PrivateChannel channel=GoldenGlow.channelsManager.checkOrAddPrivateChannel(players);
-        GoldenGlow.channelsManager.removeChannel(changingPlayer);
-        channel.getPlayers().add(changingPlayer);
+        if(!this.getPlayerChannel(changingPlayer).equals(channel)){
+            GoldenGlow.channelsManager.removeChannel(changingPlayer);
+            channel.getPlayers().add(changingPlayer);
+            JsonMsg message=new JsonMsg("Changed the channel to ");
+            message.append(channel.getPrefix());
+            message.send(changingPlayer);
+        }
+    }
+
+    public void setPlayerChannel(Player player, Channel channel){
+        Channel oldChannel= GoldenGlow.channelsManager.getPlayerChannel(player);
+        if(!channel.equals(oldChannel)){
+            GoldenGlow.channelsManager.removeChannel(player);
+            channel.getPlayers().add(player);
+            JsonMsg message=new JsonMsg("Changed the channel to ");
+            message.append(channel.getPrefix());
+            message.send(player);
+        }
     }
 
     public enum EnumChannels{
